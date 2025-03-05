@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
+import 'firebase_options.dart';
 
 // Import screens
 import 'screens/welcome_screen.dart';
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Ritualz',
+      title: 'Habitualz',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         brightness: Brightness.dark,
@@ -35,7 +36,8 @@ class MyApp extends StatelessWidget {
           elevation: 0,
         ),
         textTheme: const TextTheme(
-          displayLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 40),
+          displayLarge: TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 40),
           titleLarge: TextStyle(color: Colors.white),
           bodyLarge: TextStyle(color: Colors.white70),
           bodyMedium: TextStyle(color: Colors.white70),
@@ -58,24 +60,23 @@ class MyApp extends StatelessWidget {
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
-  
-
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
   late StreamSubscription<User?> _authStateSubscription;
-  
+
   @override
   void initState() {
     super.initState();
     checkFirstTime();
   }
-  
+
   // Check if it's the first time the app is opened
   void checkFirstTime() async {
-    _authStateSubscription = FirebaseAuth.instance.authStateChanges().listen((User? user) {
+    _authStateSubscription =
+        FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user == null) {
         // User is not logged in, show onboarding
         Navigator.pushReplacementNamed(context, '/welcome');
@@ -85,7 +86,7 @@ class _SplashScreenState extends State<SplashScreen> {
       }
     });
   }
-  
+
   @override
   void dispose() {
     _authStateSubscription.cancel();
@@ -100,11 +101,11 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AnimatedEmoji(
-                AnimatedEmojis.fire, // 🔥 Fire emoji animation
-                size: 80,
-              ),
+              AnimatedEmojis.fire, // 🔥 Fire emoji animation
+              size: 80,
+            ),
             SizedBox(height: 20),
-            Text('RITUALZ', style: TextStyle(color: Colors.grey, fontSize: 24)),
+            Text('Habitualz', style: TextStyle(color: Colors.grey, fontSize: 24)),
             SizedBox(height: 20),
             CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),

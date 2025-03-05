@@ -212,7 +212,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: Column(
                         children: [
                           const Text(
-                            'RITUALZ',
+                            'HABITUALZ',
                             style: TextStyle(
                               color: Colors.grey,
                               fontSize: 18,

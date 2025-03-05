@@ -19,7 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   late Stream<List<Habit>> _habitsStream;
   Map<DateTime, int> _heatMapDataSet = {};
-  
+
   @override
   void initState() {
     super.initState();
@@ -37,7 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void _loadHeatMapData() async {
     final User? user = _auth.currentUser;
     if (user != null) {
-      final Map<DateTime, int> heatMapData = await _habitService.getHeatMapData(user.uid);
+      final Map<DateTime, int> heatMapData =
+          await _habitService.getHeatMapData(user.uid);
       setState(() {
         _heatMapDataSet = heatMapData;
       });
@@ -59,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Get dates for the last 3 months
     final DateTime today = DateTime.now();
     final List<String> dates = [];
-    
+
     for (int i = 90; i >= 0; i--) {
       final DateTime date = today.subtract(Duration(days: i));
       dates.add(_dateTimeToString(date));
@@ -84,6 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 15),
           SizedBox(
+            width: MediaQuery.of(context).size.width, // Ensure proper width
             height: 180,
             child: GridView.builder(
               physics: const NeverScrollableScrollPhysics(),
@@ -98,10 +100,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Calculate the actual date
                 final int reverseIndex = dates.length - 1 - index;
                 final String date = dates[reverseIndex];
-                
+
                 // Get activity level for the date (0 = none, 1-10 for intensity)
-                final int activityLevel = _heatMapDataSet[_convertDateTimeFromString(date)] ?? 0;
-                
+                final int activityLevel = 
+                _heatMapDataSet[_convertDateTimeFromString(date)] ?? 0;
+
                 // Determine cell color intensity based on activity level
                 final Color cellColor = activityLevel == 0
                     ? Colors.grey.shade900
@@ -109,10 +112,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         1.0,
                         120, // Green hue
                         0.8,
-                        0.1 + (activityLevel / 10) * 0.5, // Lightness varies with activity level
+                        0.1 +
+                            (activityLevel / 10) *
+                                0.5, // Lightness varies with activity level
                       ).toColor();
-                
+
                 return Container(
+                  width: 10, // Ensure minimum width
+                  height: 10, // Ensure minimum height
                   decoration: BoxDecoration(
                     color: cellColor,
                     borderRadius: BorderRadius.circular(4),
@@ -137,9 +144,9 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // Habit heatmap
           _buildHeatMapGrid(),
-          
+
           Divider(color: Colors.grey.shade800),
-          
+
           // Habits list
           Expanded(
             child: StreamBuilder<List<Habit>>(
@@ -148,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                
+
                 if (snapshot.hasError) {
                   return Center(
                     child: Text(
@@ -157,9 +164,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   );
                 }
-                
+
                 final List<Habit> habits = snapshot.data ?? [];
-                
+
                 if (habits.isEmpty) {
                   return const Center(
                     child: Text(
@@ -168,12 +175,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   );
                 }
-                
+
                 return ListView.builder(
                   itemCount: habits.length,
                   itemBuilder: (context, index) {
                     final Habit habit = habits[index];
-                    
+
                     return HabitTile(
                       habit: habit,
                       onTap: () {
@@ -199,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _toggleHabitCompletion(Habit habit) async {
     final String today = _dateTimeToString(DateTime.now());
     final bool isCompleted = habit.completedDays.contains(today);
-    
+
     if (isCompleted) {
       // Remove today from completed days
       await _habitService.markHabitIncomplete(habit.id, today);
@@ -207,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // Add today to completed days
       await _habitService.markHabitComplete(habit.id, today);
     }
-    
+
     // Refresh heatmap data
     _loadHeatMapData();
   }
@@ -215,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // Show dialog to add a new habit
   void _showAddHabitDialog() {
     final TextEditingController nameController = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (context) {
@@ -272,9 +279,9 @@ class _HomeScreenState extends State<HomeScreen> {
         completedDays: [],
         createdAt: DateTime.now(),
       );
-      
+
       await _habitService.addHabit(newHabit);
-      
+
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -282,7 +289,7 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: Colors.green,
         ),
       );
-      
+
       // Refresh heatmap data
       _loadHeatMapData();
     }
