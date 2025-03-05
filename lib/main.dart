@@ -1,42 +1,117 @@
-// lib/main.dart
+import 'package:animated_emoji/animated_emoji.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:habitualz/screens/main_screen.dart';
-import 'package:habitualz/screens/onbaording/onboarding_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 
+// Import screens
+import 'screens/welcome_screen.dart';
+import 'screens/complete_screen.dart';
+import 'screens/everyday_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/analytics_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-    ),
-  );
-
-  // Check if onboarding has been completed
-  final prefs = await SharedPreferences.getInstance();
-  final showOnboarding = prefs.getBool('showOnboarding') ?? true;
-
-  runApp(MyApp(showOnboarding: showOnboarding));
+  await Firebase.initializeApp();
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final bool showOnboarding;
-
-  const MyApp({super.key, required this.showOnboarding});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
+      title: 'Ritualz',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        fontFamily: 'Arial',
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: Colors.black,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.black,
+          elevation: 0,
+        ),
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 40),
+          titleLarge: TextStyle(color: Colors.white),
+          bodyLarge: TextStyle(color: Colors.white70),
+          bodyMedium: TextStyle(color: Colors.white70),
+        ),
       ),
-      home: showOnboarding ? const OnboardingScreen() : const MainScreen(),
+      home: const SplashScreen(),
+      routes: {
+        '/welcome': (context) => const WelcomeScreen(),
+        '/complete': (context) => const CompleteScreen(),
+        '/everyday': (context) => const EverydayScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/home': (context) => const HomeScreen(),
+        '/settings': (context) => const SettingsScreen(),
+        '/analytics': (context) => const AnalyticsScreen(),
+      },
+    );
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  
+
+  @override
+  _SplashScreenState createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  late StreamSubscription<User?> _authStateSubscription;
+  
+  @override
+  void initState() {
+    super.initState();
+    checkFirstTime();
+  }
+  
+  // Check if it's the first time the app is opened
+  void checkFirstTime() async {
+    _authStateSubscription = FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user == null) {
+        // User is not logged in, show onboarding
+        Navigator.pushReplacementNamed(context, '/welcome');
+      } else {
+        // User is logged in, go to home screen
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    });
+  }
+  
+  @override
+  void dispose() {
+    _authStateSubscription.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedEmoji(
+                AnimatedEmojis.fire, // 🔥 Fire emoji animation
+                size: 80,
+              ),
+            SizedBox(height: 20),
+            Text('RITUALZ', style: TextStyle(color: Colors.grey, fontSize: 24)),
+            SizedBox(height: 20),
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

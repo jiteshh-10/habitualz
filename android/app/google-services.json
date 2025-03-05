@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1011121683672",
+    "project_id": "habitualz-531f2",
+    "storage_bucket": "habitualz-531f2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1011121683672:android:cf6590a1cc7ab0e8056bad",
+        "android_client_info": {
+          "package_name": "com.example.habitualz"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1011121683672-2h66d0tdq7j9qlogji8beguajaq27ji4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgf2WAIOG5grJKFsGP_MuxvU_BxZk5lls"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1011121683672-2h66d0tdq7j9qlogji8beguajaq27ji4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
