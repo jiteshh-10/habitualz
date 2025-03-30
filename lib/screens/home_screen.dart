@@ -68,6 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Calculate grid dimensions
     const int rows = 7; // Days of the week
+    // ignore: unused_local_variable
     final int cols = (dates.length / rows).ceil();
 
     return Container(

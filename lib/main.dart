@@ -2,14 +2,13 @@ import 'package:animated_emoji/animated_emoji.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:habitualz/screens/auth_screen.dart';
 import 'dart:async';
-import 'firebase_options.dart';
 
 // Import screens
 import 'screens/welcome_screen.dart';
 import 'screens/complete_screen.dart';
 import 'screens/everyday_screen.dart';
-import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/analytics_screen.dart';
@@ -48,7 +47,7 @@ class MyApp extends StatelessWidget {
         '/welcome': (context) => const WelcomeScreen(),
         '/complete': (context) => const CompleteScreen(),
         '/everyday': (context) => const EverydayScreen(),
-        '/login': (context) => const LoginScreen(),
+        '/auth': (context) => const AuthScreen(),
         '/home': (context) => const HomeScreen(),
         '/settings': (context) => const SettingsScreen(),
         '/analytics': (context) => const AnalyticsScreen(),
@@ -73,19 +72,18 @@ class _SplashScreenState extends State<SplashScreen> {
     checkFirstTime();
   }
 
-  // Check if it's the first time the app is opened
   void checkFirstTime() async {
-    _authStateSubscription =
-        FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      if (user == null) {
-        // User is not logged in, show onboarding
-        Navigator.pushReplacementNamed(context, '/welcome');
-      } else {
-        // User is logged in, go to home screen
-        Navigator.pushReplacementNamed(context, '/home');
-      }
-    });
-  }
+  _authStateSubscription =
+      FirebaseAuth.instance.authStateChanges().listen((User? user) {
+    if (user == null) {
+      // User is not logged in, show auth screen
+      Navigator.pushReplacementNamed(context, '/welcome');
+    } else {
+      // User is logged in, go to home screen
+      Navigator.pushReplacementNamed(context, '/home');
+    }
+  });
+}
 
   @override
   void dispose() {

@@ -352,7 +352,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   ),
                   Container(
                     height: 10,
-                    width: MediaQuery.of(context).size.width * (percentage / 100) - 32,
+                    width: (MediaQuery.of(context).size.width * (percentage / 100) - 32).clamp(0, double.infinity), // Ensures width is not negative
                     decoration: BoxDecoration(
                       color: HSLColor.fromAHSL(
                         1.0,

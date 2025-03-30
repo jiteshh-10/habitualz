@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'login_screen.dart'; // Importing the login screen
+import 'package:habitualz/screens/auth_screen.dart';
+
 
 class EverydayScreen extends StatelessWidget {
   const EverydayScreen({super.key});
@@ -80,7 +81,7 @@ class EverydayScreen extends StatelessWidget {
               onTap: () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  MaterialPageRoute(builder: (context) => const AuthScreen()),
                 );
               },
               child: Container(

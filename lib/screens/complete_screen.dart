@@ -44,8 +44,8 @@ class _CompleteScreenState extends State<CompleteScreen> {
           children: [
             // Animated circular progress with checkmark transition
             SizedBox(
-              width: 100,
-              height: 100,
+              width: 150,
+              height: 150,
               child: Stack(
                 alignment: Alignment.center,
                 children: [

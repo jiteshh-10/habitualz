@@ -1,34 +1,40 @@
-// login_screen.dart
 import 'package:animated_emoji/animated_emoji.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:io' show Platform;
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class AuthScreen extends StatefulWidget {
+  const AuthScreen({super.key});
 
   @override
-  _LoginScreenState createState() {
-    return _LoginScreenState();
-  }
+  _AuthScreenState createState() => _AuthScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _AuthScreenState extends State<AuthScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   bool _isLoading = false;
   String _errorMessage = '';
+  bool _isLoginMode = true;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  // Toggle between login and signup modes
+  void _toggleAuthMode() {
+    setState(() {
+      _isLoginMode = !_isLoginMode;
+      _errorMessage = '';
+    });
   }
 
   // Handle regular email & password sign in
@@ -59,6 +65,66 @@ class _LoginScreenState extends State<LoginScreen> {
     } on FirebaseAuthException catch (e) {
       setState(() {
         _errorMessage = e.message ?? 'An error occurred during sign in';
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'An unexpected error occurred';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Handle email & password sign up
+  Future<void> _signUpWithEmailAndPassword() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+        setState(() {
+          _errorMessage = 'Please enter both email and password';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      if (_passwordController.text != _confirmPasswordController.text) {
+        setState(() {
+          _errorMessage = 'Passwords do not match';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      if (_passwordController.text.length < 6) {
+        setState(() {
+          _errorMessage = 'Password must be at least 6 characters';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (userCredential.user != null) {
+        // Optional: send email verification
+        // await userCredential.user!.sendEmailVerification();
+        
+        // Navigate to home screen or onboarding
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        _errorMessage = e.message ?? 'An error occurred during sign up';
       });
     } catch (e) {
       setState(() {
@@ -205,35 +271,68 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 15),
 
-              // Forgot password
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: _resetPassword,
-                  child: const Text(
-                    'Forgot Password?',
-                    style: TextStyle(color: Colors.grey),
+              // Confirm Password field (only shown in signup mode)
+              if (!_isLoginMode)
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade900,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: TextField(
+                    controller: _confirmPasswordController,
+                    obscureText: true,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Confirm Password',
+                      hintStyle: const TextStyle(color: Colors.grey),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 15),
+                    ),
                   ),
                 ),
-              ),
+
+              // Forgot password (only shown in login mode)
+              if (_isLoginMode)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: _resetPassword,
+                    child: const Text(
+                      'Forgot Password?',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                ),
 
               // Error message
               if (_errorMessage.isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 10.0),
+                  padding: const EdgeInsets.only(bottom: 10.0, top: 10.0),
                   child: Text(
                     _errorMessage,
                     style: const TextStyle(color: Colors.red),
+                    textAlign: TextAlign.center,
                   ),
                 ),
 
-              // Login button
+              const SizedBox(height: 15),
+
+              // Login/Signup button
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _signInWithEmailAndPassword,
+                  onPressed: _isLoading
+                      ? null
+                      : _isLoginMode
+                          ? _signInWithEmailAndPassword
+                          : _signUpWithEmailAndPassword,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
                     shape: RoundedRectangleBorder(
@@ -243,11 +342,27 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Login', style: TextStyle(fontSize: 16)),
+                      : Text(
+                          _isLoginMode ? 'Login' : 'Sign Up',
+                          style: const TextStyle(fontSize: 16),
+                        ),
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 15),
+
+              // Toggle between login and signup
+              TextButton(
+                onPressed: _toggleAuthMode,
+                child: Text(
+                  _isLoginMode
+                      ? 'Don\'t have an account? Sign Up'
+                      : 'Already have an account? Login',
+                  style: const TextStyle(color: Colors.grey),
+                ),
+              ),
+
+              const SizedBox(height: 20),
 
               // Or sign in with
               Row(

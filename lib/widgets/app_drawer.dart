@@ -19,8 +19,8 @@ class AppDrawer extends StatelessWidget {
           children: [
             // Drawer header with user info
             DrawerHeader(
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 4, 4, 4),
+              decoration: const BoxDecoration(
+                color: Color.fromARGB(255, 4, 4, 4),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
