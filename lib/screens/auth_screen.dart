@@ -117,7 +117,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
       if (userCredential.user != null) {
         // Optional: send email verification
-        // await userCredential.user!.sendEmailVerification();
+        await userCredential.user!.sendEmailVerification();
         
         // Navigate to home screen or onboarding
         Navigator.pushReplacementNamed(context, '/home');
@@ -158,7 +158,7 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
-  // Handle Google sign in
+  // Handle Google sign in - Enhanced with better error handling
   Future<void> _signInWithGoogle() async {
     setState(() {
       _isLoading = true;
@@ -166,31 +166,43 @@ class _AuthScreenState extends State<AuthScreen> {
     });
 
     try {
+      // Begin interactive sign in process
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
+        // User canceled the sign-in flow
         setState(() {
           _isLoading = false;
         });
         return;
       }
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
+      // Obtain auth details from request
+      try {
+        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+        
+        // Create a new credential for Firebase
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
 
-      final UserCredential userCredential =
-          await _auth.signInWithCredential(credential);
+        // Sign in to Firebase with the Google credential
+        final UserCredential userCredential = await _auth.signInWithCredential(credential);
 
-      if (userCredential.user != null) {
-        Navigator.pushReplacementNamed(context, '/home');
+        if (userCredential.user != null) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      } catch (authError) {
+        setState(() {
+          _errorMessage = 'Failed to authenticate with Google: $authError';
+        });
+        // Also try to sign out from Google to clean up the state
+        await _googleSignIn.signOut();
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to sign in with Google';
+        _errorMessage = 'Google sign in failed: $e';
       });
     } finally {
       setState(() {
@@ -202,6 +214,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -335,6 +348,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           : _signUpWithEmailAndPassword,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                       side: const BorderSide(color: Colors.white, width: 1),
@@ -369,9 +383,8 @@ class _AuthScreenState extends State<AuthScreen> {
                 children: [
                   Expanded(child: Divider(color: Colors.grey.shade700)),
                   const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 15.0),
-                    child: Text('Or sign in with',
-                        style: TextStyle(color: Colors.grey)),
+                    padding: EdgeInsets.symmetric(horizontal: 10.0),
+                    child: Text('OR', style: TextStyle(color: Colors.grey)),
                   ),
                   Expanded(child: Divider(color: Colors.grey.shade700)),
                 ],
@@ -379,33 +392,37 @@ class _AuthScreenState extends State<AuthScreen> {
 
               const SizedBox(height: 20),
 
-              // Social login buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Google button
-                  GestureDetector(
-                    onTap: _signInWithGoogle,
-                    child: Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade900,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'G',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+              // Google Sign In button
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton.icon(
+                  onPressed: _isLoading ? null : _signInWithGoogle,
+                  icon: Image.network(
+                    'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg',
+                    height: 24,
+                  ),
+                  label: const Text(
+                    'Sign in with Google',
+                    style: TextStyle(fontSize: 16, color: Colors.black),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.black,
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Terms of service
+              const Text(
+                'By continuing, you agree to our Terms of Service and Privacy Policy',
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+                textAlign: TextAlign.center,
               ),
             ],
           ),

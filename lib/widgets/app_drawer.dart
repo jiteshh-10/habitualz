@@ -86,8 +86,14 @@ class AppDrawer extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () async {
-                    await _auth.signOut();
-                    Navigator.pushReplacementNamed(context, '/login');
+                    try {
+                      await _auth.signOut();
+                      Navigator.pushReplacementNamed(context, '/auth');
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error signing out: $e')),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey.shade900,

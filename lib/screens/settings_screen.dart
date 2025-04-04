@@ -82,7 +82,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           
           // Then delete the user account
           await user.delete();
-          Navigator.pushReplacementNamed(context, '/login');
+          // Changed from '/login' to '/auth' to match routes in main.dart
+          Navigator.pushReplacementNamed(context, '/auth');
         }
       } on FirebaseAuthException catch (e) {
         // Handle auth errors like requiring recent login
@@ -93,7 +94,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         if (e.code == 'requires-recent-login') {
           // Force user to re-authenticate
           await _auth.signOut();
-          Navigator.pushReplacementNamed(context, '/login');
+          // Changed from '/login' to '/auth' to match routes in main.dart
+          Navigator.pushReplacementNamed(context, '/auth');
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -193,8 +195,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Icons.logout,
                       Colors.orange,
                       () async {
-                        await _auth.signOut();
-                        Navigator.pushReplacementNamed(context, '/login');
+                        try {
+                          await _auth.signOut();
+                          Navigator.pushReplacementNamed(context, '/auth');
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error signing out: $e')),
+                          );
+                        }
                       },
                     ),
                     _buildAccountOption(
@@ -290,6 +298,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  // Other methods remain unchanged
   Widget _buildSettingSwitch(
     String title,
     String subtitle,
