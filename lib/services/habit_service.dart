@@ -12,10 +12,30 @@ class HabitService {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs.map((doc) {
-            return Habit.fromMap(doc.data(), doc.id);
-          }).toList();
-        });
+      return snapshot.docs.map((doc) {
+        return Habit.fromMap(doc.data(), doc.id);
+      }).toList();
+    });
+  }
+
+  Future<List<Habit>> getUserHabitsOnce(String userId) async {
+    try {
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('habits')
+          .doc(userId)
+          .collection('userHabits')
+          .get();
+
+      return snapshot.docs.map((doc) {
+        return Habit.fromMap(
+          doc.data() as Map<String, dynamic>,
+          doc.id,
+        );
+      }).toList();
+    } catch (e) {
+      print('Error fetching habits: $e');
+      return [];
+    }
   }
 
   // Add a new habit to the correct subcollection
@@ -39,44 +59,46 @@ class HabitService {
   }
 
   // Mark a habit as complete for a specific day
-  Future<void> markHabitComplete(String userId, String habitId, String date) async {
+  Future<void> markHabitComplete(
+      String userId, String habitId, String date) async {
     await FirebaseFirestore.instance
         .collection('habits')
         .doc(userId)
         .collection('userHabits')
         .doc(habitId)
         .update({
-          'completedDays': FieldValue.arrayUnion([date])
-        });
+      'completedDays': FieldValue.arrayUnion([date])
+    });
   }
 
   // Mark a habit as incomplete for a specific day
-  Future<void> markHabitIncomplete(String userId, String habitId, String date) async {
+  Future<void> markHabitIncomplete(
+      String userId, String habitId, String date) async {
     await FirebaseFirestore.instance
         .collection('habits')
         .doc(userId)
         .collection('userHabits')
         .doc(habitId)
         .update({
-          'completedDays': FieldValue.arrayRemove([date])
-        });
+      'completedDays': FieldValue.arrayRemove([date])
+    });
   }
 
   // Get heatmap data for calendar display from the subcollection
   Future<Map<DateTime, int>> getHeatMapData(String userId) async {
     final Map<DateTime, int> heatMapData = {};
-    
+
     final QuerySnapshot snapshot = await FirebaseFirestore.instance
         .collection('habits')
         .doc(userId)
         .collection('userHabits')
         .get();
-    
+
     if (snapshot.docs.isNotEmpty) {
       final List<Habit> habits = snapshot.docs.map((doc) {
         return Habit.fromMap(doc.data() as Map<String, dynamic>, doc.id);
       }).toList();
-      
+
       for (final habit in habits) {
         for (final dateString in habit.completedDays) {
           final DateTime date = DateFormat('yyyy-MM-dd').parse(dateString);
@@ -88,7 +110,7 @@ class HabitService {
         }
       }
     }
-    
+
     return heatMapData;
   }
 }

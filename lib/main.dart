@@ -21,13 +21,13 @@ void main() async {
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
-       apiKey: "AIzaSyAuLs9fsAmSUPMKwkL0JglTajlLrdXWXCk",
-       authDomain: "habitualz-531f2.firebaseapp.com",
-       projectId: "habitualz-531f2",
-      storageBucket: "habitualz-531f2.firebasestorage.app",
-      messagingSenderId: "1011121683672",
-      appId: "1:1011121683672:web:4043b496f999ba98056bad",
-      measurementId: "G-6N74F01JTH"
+        apiKey: "AIzaSyAuLs9fsAmSUPMKwkL0JglTajlLrdXWXCk",
+        authDomain: "habitualz-531f2.firebaseapp.com",
+        projectId: "habitualz-531f2",
+        storageBucket: "habitualz-531f2.firebasestorage.app",
+        messagingSenderId: "1011121683672",
+        appId: "1:1011121683672:web:4043b496f999ba98056bad",
+        measurementId: "G-6N74F01JTH",
       ),
     );
   } else {
@@ -37,20 +37,53 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+  
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool _isDarkTheme = true; // Default: dark mode
+
+  // This callback will be passed to SettingsScreen to update the theme.
+  void _updateTheme(bool isDark) {
+    setState(() {
+      _isDarkTheme = isDark;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Habitualz',
+      debugShowCheckedModeBanner: false, // Hides the debug banner
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          iconTheme: IconThemeData(color: Colors.black),
+          titleTextStyle: TextStyle(color: Colors.black, fontSize: 20),
+        ),
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(
+              color: Colors.black, fontWeight: FontWeight.bold, fontSize: 40),
+          titleLarge: TextStyle(color: Colors.black),
+          bodyLarge: TextStyle(color: Colors.black87),
+          bodyMedium: TextStyle(color: Colors.black87),
+        ),
+      ),
+      darkTheme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: Colors.black,
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.black,
           elevation: 0,
+          iconTheme: IconThemeData(color: Colors.white),
+          titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
         ),
         textTheme: const TextTheme(
           displayLarge: TextStyle(
@@ -60,6 +93,7 @@ class MyApp extends StatelessWidget {
           bodyMedium: TextStyle(color: Colors.white70),
         ),
       ),
+      themeMode: _isDarkTheme ? ThemeMode.dark : ThemeMode.light,
       home: const SplashScreen(),
       routes: {
         '/welcome': (context) => const WelcomeScreen(),
@@ -67,7 +101,11 @@ class MyApp extends StatelessWidget {
         '/everyday': (context) => const EverydayScreen(),
         '/auth': (context) => const AuthScreen(),
         '/home': (context) => const HomeScreen(),
-        '/settings': (context) => const SettingsScreen(),
+        // Pass current theme and callback to settings
+        '/settings': (context) => SettingsScreen(
+              isDarkTheme: _isDarkTheme,
+              onThemeChanged: _updateTheme,
+            ),
         '/analytics': (context) => const AnalyticsScreen(),
       },
     );
@@ -91,17 +129,17 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void checkFirstTime() async {
-  _authStateSubscription =
-      FirebaseAuth.instance.authStateChanges().listen((User? user) {
-    if (user == null) {
-      // User is not logged in, show auth screen
-      Navigator.pushReplacementNamed(context, '/welcome');
-    } else {
-      // User is logged in, go to home screen
-      Navigator.pushReplacementNamed(context, '/home');
-    }
-  });
-}
+    _authStateSubscription =
+        FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user == null) {
+        // User is not logged in, show auth screen
+        Navigator.pushReplacementNamed(context, '/welcome');
+      } else {
+        // User is logged in, go to home screen
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -121,7 +159,8 @@ class _SplashScreenState extends State<SplashScreen> {
               size: 80,
             ),
             SizedBox(height: 20),
-            Text('Habitualz', style: TextStyle(color: Colors.grey, fontSize: 24)),
+            Text('Habitualz',
+                style: TextStyle(color: Colors.grey, fontSize: 24)),
             SizedBox(height: 20),
             CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),

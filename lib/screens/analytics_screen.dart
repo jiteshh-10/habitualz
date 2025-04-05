@@ -206,7 +206,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color:Color.fromARGB(255, 230, 119, 9),
                 ),
               ),
               const SizedBox(height: 16),
@@ -225,7 +225,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Color.fromARGB(255, 230, 119, 9),
                 ),
               ),
               const SizedBox(height: 16),
@@ -329,7 +329,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   Expanded(
                     child: Text(
                       entry.key,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Color.fromARGB(255, 230, 119, 9)),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),

@@ -7,7 +7,14 @@ import '../widgets/app_drawer.dart';
 import '../models/habit.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  final bool isDarkTheme;
+  final ValueChanged<bool> onThemeChanged;
+
+  const SettingsScreen({
+    super.key,
+    required this.isDarkTheme,
+    required this.onThemeChanged,
+  });
 
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
@@ -16,15 +23,16 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final HabitService _habitService = HabitService();
-  bool _isDarkTheme = true;  // App is already dark themed
   bool _enableNotifications = true;
   bool _isLoading = false;
   late Stream<List<Habit>> _habitsStream;
-  
+  late bool _isDarkTheme;
+
   @override
   void initState() {
     super.initState();
     _loadUserHabits();
+    _isDarkTheme = widget.isDarkTheme; // Initialize from widget value
   }
 
   void _loadUserHabits() {
@@ -68,7 +76,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       try {
         final User? user = _auth.currentUser;
         if (user != null) {
-          // First delete all user's habits
           final QuerySnapshot habitsSnapshot = await FirebaseFirestore.instance
               .collection('habits')
               .where('userId', isEqualTo: user.uid)
@@ -79,22 +86,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             batch.delete(doc.reference);
           }
           await batch.commit();
-          
-          // Then delete the user account
           await user.delete();
-          // Changed from '/login' to '/auth' to match routes in main.dart
           Navigator.pushReplacementNamed(context, '/auth');
         }
       } on FirebaseAuthException catch (e) {
-        // Handle auth errors like requiring recent login
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${e.message}')),
         );
         
         if (e.code == 'requires-recent-login') {
-          // Force user to re-authenticate
           await _auth.signOut();
-          // Changed from '/login' to '/auth' to match routes in main.dart
           Navigator.pushReplacementNamed(context, '/auth');
         }
       } catch (e) {
@@ -124,12 +125,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // User profile section
                     _buildProfileSection(),
-                    
                     const SizedBox(height: 24),
-                    
-                    // App settings
                     const Text(
                       'App Settings',
                       style: TextStyle(
@@ -147,9 +144,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         setState(() {
                           _isDarkTheme = value;
                         });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('This app only supports dark theme')),
-                        );
+                        widget.onThemeChanged(value);
                       },
                     ),
                     _buildSettingSwitch(
@@ -162,10 +157,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         });
                       },
                     ),
-                    
                     const SizedBox(height: 24),
-                    
-                    // Habit management
                     const Text(
                       'Manage Habits',
                       style: TextStyle(
@@ -176,10 +168,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: 8),
                     _buildHabitsList(),
-                    
                     const SizedBox(height: 24),
-                    
-                    // Account section
                     const Text(
                       'Account',
                       style: TextStyle(
@@ -212,10 +201,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Colors.red,
                       _deleteAccount,
                     ),
-                    
                     const SizedBox(height: 40),
-                    
-                    // App info
                     Center(
                       child: Column(
                         children: [
@@ -229,7 +215,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Version 1.0.0',
+                            'Version 1.1.0',
                             style: TextStyle(
                               color: Colors.grey.shade600,
                               fontSize: 14,
@@ -298,7 +284,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // Other methods remain unchanged
   Widget _buildSettingSwitch(
     String title,
     String subtitle,
@@ -375,50 +360,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
   
- void _deleteHabit(Habit habit) async {
-  final shouldDelete = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      backgroundColor: Colors.grey.shade900,
-      title: const Text(
-        'Delete Habit?',
-        style: TextStyle(color: Colors.white),
-      ),
-      content: Text(
-        'This will permanently delete "${habit.name}" and all its history. This action cannot be undone.',
-        style: const TextStyle(color: Colors.grey),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+  void _deleteHabit(Habit habit) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey.shade900,
+        title: const Text(
+          'Delete Habit?',
+          style: TextStyle(color: Colors.white),
         ),
-        TextButton(
-          onPressed: () => Navigator.pop(context, true),
-          child: const Text('Delete', style: TextStyle(color: Colors.red)),
+        content: Text(
+          'This will permanently delete "${habit.name}" and all its history. This action cannot be undone.',
+          style: const TextStyle(color: Colors.grey),
         ),
-      ],
-    ),
-  );
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
 
-  if (shouldDelete == true) {
-    try {
-      // Pass the current user's uid along with the habit id.
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        await _habitService.deleteHabit(user.uid, habit.id);
+    if (shouldDelete == true) {
+      try {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          await _habitService.deleteHabit(user.uid, habit.id);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Habit deleted successfully')),
+          );
+        }
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Habit deleted successfully')),
+          SnackBar(content: Text('Error deleting habit: $e')),
         );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting habit: $e')),
-      );
     }
   }
-}
-
   
   Widget _buildAccountOption(
     String title,
