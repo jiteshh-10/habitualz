@@ -1,6 +1,7 @@
 // home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../widgets/habit_tile.dart';
 import '../widgets/app_drawer.dart';
@@ -103,8 +104,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 final String date = dates[reverseIndex];
 
                 // Get activity level for the date (0 = none, 1-10 for intensity)
-                final int activityLevel = 
-                _heatMapDataSet[_convertDateTimeFromString(date)] ?? 0;
+                final int activityLevel =
+                    _heatMapDataSet[_convertDateTimeFromString(date)] ?? 0;
 
                 // Determine cell color intensity based on activity level
                 final Color cellColor = activityLevel == 0
@@ -204,16 +205,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Toggle habit completion for today
+  // Toggle habit completion for today
   void _toggleHabitCompletion(Habit habit) async {
     final String today = _dateTimeToString(DateTime.now());
     final bool isCompleted = habit.completedDays.contains(today);
 
     if (isCompleted) {
       // Remove today from completed days
-      await _habitService.markHabitIncomplete(habit.id, today);
+      await _habitService.markHabitIncomplete(habit.userId, habit.id, today);
     } else {
       // Add today to completed days
-      await _habitService.markHabitComplete(habit.id, today);
+      await _habitService.markHabitComplete(habit.userId, habit.id, today);
     }
 
     // Refresh heatmap data
@@ -269,30 +271,51 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Add a new habit to Firestore
+  // Add a new habit to Firestore in the correct subcollection
   void _addNewHabit(String name) async {
     final User? user = _auth.currentUser;
     if (user != null) {
+      // Use the subcollection path: habits/{userId}/userHabits/{habitId}
+      final CollectionReference habitCollection = FirebaseFirestore.instance
+          .collection('habits')
+          .doc(user.uid)
+          .collection('userHabits');
+
+      // Create a new document reference with an auto-generated ID
+      final DocumentReference docRef = habitCollection.doc();
+
+      // Set the habit's id to the document reference id
       final Habit newHabit = Habit(
-        id: '',
+        id: docRef.id,
         userId: user.uid,
         name: name,
         completedDays: [],
         createdAt: DateTime.now(),
       );
 
-      await _habitService.addHabit(newHabit);
+      try {
+        // Write the new habit to Firestore
+        await docRef.set(newHabit.toMap());
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Habit added successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Habit added successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
 
-      // Refresh heatmap data
-      _loadHeatMapData();
+        // Refresh heatmap data
+        _loadHeatMapData();
+      } catch (error) {
+        // Handle permission errors or any other errors gracefully
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error adding habit: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }

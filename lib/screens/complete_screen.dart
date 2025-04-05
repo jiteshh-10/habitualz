@@ -19,21 +19,27 @@ class _CompleteScreenState extends State<CompleteScreen> {
   }
 
   void _startAnimation() {
-    Timer.periodic(const Duration(milliseconds: 50), (timer) {
-      if (_progress >= 1.0) {
-        timer.cancel();
-        Future.delayed(const Duration(milliseconds: 500), () {
+  Timer.periodic(const Duration(milliseconds: 50), (timer) {
+    // Ensure _progress is properly initialized and does not exceed bounds
+    if (_progress >= 1.0) {
+      timer.cancel();
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) { // Check if the widget is still mounted
           setState(() {
             _showCheckmark = true;
           });
-        });
-      } else {
+        }
+      });
+    } else {
+      if (mounted) { // Check if the widget is still mounted
         setState(() {
-          _progress += 0.05;
+          _progress = (_progress + 0.05).clamp(0.0, 1.0); // Ensure progress stays between 0.0 and 1.0
         });
       }
-    });
-  }
+    }
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +89,7 @@ class _CompleteScreenState extends State<CompleteScreen> {
                 _buildDot(Colors.grey.shade700),
               ],
             ),
-            const SizedBox(height: 60),
+            const SizedBox(height: 55),
             // Next button
             GestureDetector(
               onTap: () {

@@ -375,45 +375,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
   
-  void _deleteHabit(Habit habit) async {
-    final shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey.shade900,
-        title: const Text(
-          'Delete Habit?',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: Text(
-          'This will permanently delete "${habit.name}" and all its history. This action cannot be undone.',
-          style: const TextStyle(color: Colors.grey),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
+ void _deleteHabit(Habit habit) async {
+  final shouldDelete = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      backgroundColor: Colors.grey.shade900,
+      title: const Text(
+        'Delete Habit?',
+        style: TextStyle(color: Colors.white),
       ),
-    );
-    
-    if (shouldDelete == true) {
-      try {
-        await _habitService.deleteHabit(habit.id);
+      content: Text(
+        'This will permanently delete "${habit.name}" and all its history. This action cannot be undone.',
+        style: const TextStyle(color: Colors.grey),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('Delete', style: TextStyle(color: Colors.red)),
+        ),
+      ],
+    ),
+  );
+
+  if (shouldDelete == true) {
+    try {
+      // Pass the current user's uid along with the habit id.
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await _habitService.deleteHabit(user.uid, habit.id);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Habit deleted successfully')),
         );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error deleting habit: $e')),
-        );
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting habit: $e')),
+      );
     }
   }
+}
+
   
   Widget _buildAccountOption(
     String title,

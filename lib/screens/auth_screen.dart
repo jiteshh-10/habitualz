@@ -1,4 +1,5 @@
 import 'package:animated_emoji/animated_emoji.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -14,7 +15,8 @@ class _AuthScreenState extends State<AuthScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   bool _isLoading = false;
@@ -118,7 +120,7 @@ class _AuthScreenState extends State<AuthScreen> {
       if (userCredential.user != null) {
         // Optional: send email verification
         await userCredential.user!.sendEmailVerification();
-        
+
         // Navigate to home screen or onboarding
         Navigator.pushReplacementNamed(context, '/home');
       }
@@ -166,39 +168,36 @@ class _AuthScreenState extends State<AuthScreen> {
     });
 
     try {
-      // Begin interactive sign in process
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      UserCredential userCredential;
 
-      if (googleUser == null) {
-        // User canceled the sign-in flow
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
+      if (kIsWeb) {
+        // Web implementation
+        GoogleAuthProvider googleProvider = GoogleAuthProvider();
+        googleProvider
+            .addScope('https://www.googleapis.com/auth/contacts.readonly');
+        userCredential = await _auth.signInWithPopup(googleProvider);
+      } else {
+        // Mobile implementation (your existing code)
+        final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+        if (googleUser == null) {
+          setState(() {
+            _isLoading = false;
+          });
+          return;
+        }
 
-      // Obtain auth details from request
-      try {
-        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-        
-        // Create a new credential for Firebase
+        final GoogleSignInAuthentication googleAuth =
+            await googleUser.authentication;
         final AuthCredential credential = GoogleAuthProvider.credential(
           accessToken: googleAuth.accessToken,
           idToken: googleAuth.idToken,
         );
 
-        // Sign in to Firebase with the Google credential
-        final UserCredential userCredential = await _auth.signInWithCredential(credential);
+        userCredential = await _auth.signInWithCredential(credential);
+      }
 
-        if (userCredential.user != null) {
-          Navigator.pushReplacementNamed(context, '/home');
-        }
-      } catch (authError) {
-        setState(() {
-          _errorMessage = 'Failed to authenticate with Google: $authError';
-        });
-        // Also try to sign out from Google to clean up the state
-        await _googleSignIn.signOut();
+      if (userCredential.user != null) {
+        Navigator.pushReplacementNamed(context, '/home');
       }
     } catch (e) {
       setState(() {
@@ -398,9 +397,13 @@ class _AuthScreenState extends State<AuthScreen> {
                 height: 50,
                 child: ElevatedButton.icon(
                   onPressed: _isLoading ? null : _signInWithGoogle,
-                  icon: Image.network(
-                    'https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg',
-                    height: 24,
+                  icon: const Text(
+                    'G',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
                   label: const Text(
                     'Sign in with Google',

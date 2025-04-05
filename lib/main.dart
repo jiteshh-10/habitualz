@@ -13,9 +13,27 @@ import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/analytics_screen.dart';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  
+  if (kIsWeb) {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+       apiKey: "AIzaSyAuLs9fsAmSUPMKwkL0JglTajlLrdXWXCk",
+       authDomain: "habitualz-531f2.firebaseapp.com",
+       projectId: "habitualz-531f2",
+      storageBucket: "habitualz-531f2.firebasestorage.app",
+      messagingSenderId: "1011121683672",
+      appId: "1:1011121683672:web:4043b496f999ba98056bad",
+      measurementId: "G-6N74F01JTH"
+      ),
+    );
+  } else {
+    await Firebase.initializeApp();
+  }
+  
   runApp(const MyApp());
 }
 

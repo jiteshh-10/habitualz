@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:habitualz/screens/auth_screen.dart';
 
-
 class EverydayScreen extends StatelessWidget {
   const EverydayScreen({super.key});
 
@@ -78,7 +77,12 @@ class EverydayScreen extends StatelessWidget {
             const SizedBox(height: 60),
             // Complete button navigates to LoginScreen
             GestureDetector(
-              onTap: () {
+              onTap: () async {
+                // Unfocus using the primary focus.
+                FocusManager.instance.primaryFocus?.unfocus();
+                // Wait a short delay to allow focus updates to complete.
+                await Future.delayed(const Duration(milliseconds: 100));
+                // Now safely navigate to the AuthScreen.
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => const AuthScreen()),
