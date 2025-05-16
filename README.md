@@ -44,16 +44,16 @@ Provider Pattern: State management
 
 Screenshots
 <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-  <img src="assets/screenshots/SignIn.png" alt="Sign In Screen" width="200"/>
-  <img src="assets/screenshots/SignUp.png" alt="Sign Up Screen" width="200"/>
-  <img src="assets/screenshots/Home.png" alt="Home Screen" width="200"/>
-  <img src="assets/screenshots/SideBar.png" alt="Side Bar" width="200"/>
-  <img src="assets/screenshots/AddHabit.png" alt="Add Habit Screen" width="200"/>
-  <img src="assets/screenshots/Analytics.png" alt="Analytics Screen" width="200"/>
-  <img src="assets/screenshots/Settings.png" alt="Settings Screen" width="200"/>
-  <img src="assets/screenshots/Welcome.png" alt="Welcome Screen" width="200"/>
-  <img src="assets/screenshots/Welcome2.png" alt="Welcome Screen 2" width="200"/>
-  <img src="assets/screenshots/welcome3.png" alt="Welcome Screen 3" width="200"/>
+  <img src="assets/screenshots/SignIn.jpg" alt="Sign In Screen" width="200"/>
+  <img src="assets/screenshots/SignUp.jpg" alt="Sign Up Screen" width="200"/>
+  <img src="assets/screenshots/Home.jpg" alt="Home Screen" width="200"/>
+  <img src="assets/screenshots/SideBar.jpg" alt="Side Bar" width="200"/>
+  <img src="assets/screenshots/AddHabit.jpg" alt="Add Habit Screen" width="200"/>
+  <img src="assets/screenshots/Analytics.jpg" alt="Analytics Screen" width="200"/>
+  <img src="assets/screenshots/Settings.jpg" alt="Settings Screen" width="200"/>
+  <img src="assets/screenshots/Welcome.jpg" alt="Welcome Screen" width="200"/>
+  <img src="assets/screenshots/Welcome2.jpg" alt="Welcome Screen 2" width="200"/>
+  <img src="assets/screenshots/welcome3.jpg" alt="Welcome Screen 3" width="200"/>
 </div>
 Installation
 
