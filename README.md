@@ -1,4 +1,3 @@
-```markdown
 # 🔥 Habitualz - Smart Habit Tracking App
 
 <div align="center">
@@ -82,7 +81,6 @@
 1. **Clone this repository**
    ```bash
    git clone https://github.com/jiteshh-10/habitualz.git
-   ```
 
 2. **Navigate to the project directory**
    ```bash
