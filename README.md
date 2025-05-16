@@ -1,12 +1,13 @@
 # Habitualz - Habit Tracking App
-
 <img src="screenshots/app_icon.png" alt="Habitualz App Icon" width="100"/>
+
+## Live Demo
+Check out the live demo: [https://habitualz-531f2.web.app](https://habitualz-531f2.web.app)
 
 ## Overview
 Habitualz is a comprehensive habit tracking application designed to help users build and maintain positive habits through visual tracking, analytics, and customizable reminders. The app provides an intuitive interface for daily habit monitoring with powerful visualization tools to keep users motivated.
 
 ## Features
-
 ### Authentication & User Management
 - **Firebase Authentication**: Secure email/password login and registration
 - **Account Recovery**: Password reset functionality via email
@@ -40,7 +41,6 @@ Habitualz is a comprehensive habit tracking application designed to help users b
 - **Provider Pattern**: State management
 
 ## Screenshots
-
 <div style="display: flex; flex-wrap: wrap; gap: 10px;">
     <img src="screenshots/login_screen.png" alt="Login Screen" width="200"/>
     <img src="screenshots/home_screen.png" alt="Home Screen" width="200"/>
@@ -50,22 +50,18 @@ Habitualz is a comprehensive habit tracking application designed to help users b
 </div>
 
 ## Installation
-
 1. Clone this repository
 ```bash
 git clone https://github.com/jiteshh-10/habitualz.git
 ```
-
 2. Navigate to the project directory
 ```bash
 cd habitualz
 ```
-
 3. Install dependencies
 ```bash
 flutter pub get
 ```
-
 4. Run the app
 ```bash
 flutter run
