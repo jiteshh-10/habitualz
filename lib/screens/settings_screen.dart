@@ -76,15 +76,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
       try {
         final User? user = _auth.currentUser;
         if (user != null) {
+          // Optimized: Direct subcollection access instead of where query
           final QuerySnapshot habitsSnapshot = await FirebaseFirestore.instance
               .collection('habits')
-              .where('userId', isEqualTo: user.uid)
+              .doc(user.uid)
+              .collection('userHabits')
               .get();
           
           final batch = FirebaseFirestore.instance.batch();
           for (final doc in habitsSnapshot.docs) {
             batch.delete(doc.reference);
           }
+          
+          // Delete the user document as well
+          batch.delete(FirebaseFirestore.instance.collection('habits').doc(user.uid));
+          
           await batch.commit();
           await user.delete();
           Navigator.pushReplacementNamed(context, '/auth');

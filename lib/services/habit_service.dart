@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import '../models/habit.dart';
 
@@ -85,8 +86,17 @@ class HabitService {
   }
 
   // Get heatmap data for calendar display from the subcollection
-  Future<Map<DateTime, int>> getHeatMapData(String userId) async {
+  // Optimized: Pre-allocate map and cache parsed dates
+  Future<Map<DateTime, int>> getHeatMapData(String userId, {int daysToInclude = 90}) async {
     final Map<DateTime, int> heatMapData = {};
+    
+    // Pre-allocate the map with zeroes for the date range
+    final DateTime today = DateTime.now();
+    for (int i = 0; i < daysToInclude; i++) {
+      final DateTime date = DateTime(today.year, today.month, today.day)
+          .subtract(Duration(days: i));
+      heatMapData[date] = 0;
+    }
 
     final QuerySnapshot snapshot = await FirebaseFirestore.instance
         .collection('habits')
@@ -99,13 +109,25 @@ class HabitService {
         return Habit.fromMap(doc.data() as Map<String, dynamic>, doc.id);
       }).toList();
 
+      // Optimize: Parse dates only once and normalize to date-only
       for (final habit in habits) {
         for (final dateString in habit.completedDays) {
-          final DateTime date = DateFormat('yyyy-MM-dd').parse(dateString);
-          if (heatMapData.containsKey(date)) {
-            heatMapData[date] = heatMapData[date]! + 1;
-          } else {
-            heatMapData[date] = 1;
+          try {
+            final DateTime parsedDate = DateFormat('yyyy-MM-dd').parse(dateString);
+            // Normalize to midnight for consistent comparison
+            final DateTime dateOnly = DateTime(
+              parsedDate.year,
+              parsedDate.month,
+              parsedDate.day,
+            );
+            if (heatMapData.containsKey(dateOnly)) {
+              heatMapData[dateOnly] = heatMapData[dateOnly]! + 1;
+            }
+          } catch (e) {
+            // Log error in debug mode only using debugPrint
+            if (kDebugMode) {
+              debugPrint('Warning: Invalid date format in completedDays: $dateString');
+            }
           }
         }
       }

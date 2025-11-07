@@ -3,13 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AppDrawer extends StatelessWidget {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  AppDrawer({super.key});
+  const AppDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final User? user = _auth.currentUser;
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    final User? user = auth.currentUser;
     final String userEmail = user?.email ?? 'User';
 
     return Drawer(
@@ -87,7 +86,7 @@ class AppDrawer extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () async {
                     try {
-                      await _auth.signOut();
+                      await auth.signOut();
                       Navigator.pushReplacementNamed(context, '/auth');
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(

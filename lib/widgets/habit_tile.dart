@@ -9,6 +9,9 @@ class HabitTile extends StatelessWidget {
   final bool showOptions;
   final VoidCallback? onDelete;
 
+  // Cache the date formatter to avoid creating it on every build
+  static final DateFormat _dateFormatter = DateFormat('yyyy-MM-dd');
+
   const HabitTile({
     super.key,
     required this.habit,
@@ -19,9 +22,9 @@ class HabitTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if habit is completed today
-    final String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    final bool isCompleted = habit.completedDays.contains(today);
+    // Check if habit is completed today - use cached formatter and helper method
+    final String today = _dateFormatter.format(DateTime.now());
+    final bool isCompleted = habit.isCompletedOn(today);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),

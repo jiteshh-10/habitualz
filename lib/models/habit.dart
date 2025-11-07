@@ -2,11 +2,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Habit {
-  String id;
-  String name;
-  String userId;
-  List<String> completedDays;
-  DateTime createdAt;
+  final String id;
+  final String name;
+  final String userId;
+  // Note: While this is a final field, the List itself is mutable.
+  // The list should not be modified directly; use Firestore operations instead.
+  final List<String> completedDays;
+  final DateTime createdAt;
 
   Habit({
     required this.id,
@@ -38,4 +40,23 @@ class Habit {
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
+  
+  // Helper method to check if habit is completed on a specific date
+  bool isCompletedOn(String dateString) {
+    return completedDays.contains(dateString);
+  }
+  
+  // Helper method to get completion count
+  int get completionCount => completedDays.length;
+}
+
+// Data class for streak calculation results
+class StreakResult {
+  final int currentStreak;
+  final int longestStreak;
+  
+  const StreakResult({
+    required this.currentStreak,
+    required this.longestStreak,
+  });
 }
