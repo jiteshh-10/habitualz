@@ -1,5 +1,6 @@
 // home_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -80,11 +81,10 @@ class _HomeScreenState extends State<HomeScreen> {
             heatMapData[dateOnly] = heatMapData[dateOnly]! + 1;
           }
         } catch (e) {
-          // Log error in debug mode only
-          assert(() {
-            print('Warning: Error parsing date in heatmap: $completedDay - $e');
-            return true;
-          }());
+          // Log error in debug mode only using debugPrint
+          if (kDebugMode) {
+            debugPrint('Warning: Error parsing date in heatmap: $completedDay - $e');
+          }
         }
       }
     }

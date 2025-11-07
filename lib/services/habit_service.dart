@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import '../models/habit.dart';
 
@@ -123,11 +124,10 @@ class HabitService {
               heatMapData[dateOnly] = heatMapData[dateOnly]! + 1;
             }
           } catch (e) {
-            // Silently skip invalid dates but log in debug mode
-            assert(() {
-              print('Warning: Invalid date format in completedDays: $dateString');
-              return true;
-            }());
+            // Log error in debug mode only using debugPrint
+            if (kDebugMode) {
+              debugPrint('Warning: Invalid date format in completedDays: $dateString');
+            }
           }
         }
       }

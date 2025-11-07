@@ -130,9 +130,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     int longestStreak = 0;
     int tempStreak = 0;
     
-    // Optimize: Use functional approach for better performance
-    final Set<String> completedDatesSet = 
-        habits.expand((h) => h.completedDays).toSet();
+    // Optimize: Build set efficiently by adding all habit dates
+    final Set<String> completedDatesSet = <String>{};
+    for (final habit in habits) {
+      completedDatesSet.addAll(habit.completedDays);
+    }
     
     // Check for the last 100 days (arbitrary limit)
     for (int i = 0; i < 100; i++) {

@@ -17,7 +17,7 @@ class Habit {
     List<String>? completedDays,
     DateTime? createdAt,
   }) : 
-    completedDays = completedDays ?? const [],
+    completedDays = completedDays ?? [],
     createdAt = createdAt ?? DateTime.now();
 
   // Create a Habit from a Map (for Firestore)
