@@ -24,10 +24,24 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   int _currentStreak = 0;
   int _longestStreak = 0;
   
+  // Cache to avoid recalculating formatted dates
+  final List<String> _formattedDates = [];
+  final List<DateTime> _lastWeekDates = [];
+  
   @override
   void initState() {
     super.initState();
+    _initializeDateCache();
     _loadUserHabits();
+  }
+
+  void _initializeDateCache() {
+    final DateTime today = DateTime.now();
+    for (int i = 0; i < 7; i++) {
+      final date = today.subtract(Duration(days: i));
+      _lastWeekDates.add(date);
+      _formattedDates.add(DateFormat('yyyy-MM-dd').format(date));
+    }
   }
 
   void _loadUserHabits() {
@@ -41,45 +55,46 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 
   void _calculateAnalytics(List<Habit> habits) {
-    if (habits.isEmpty) return;
+    if (habits.isEmpty) {
+      setState(() {
+        _weeklyData = [];
+        _habitCounts = {};
+        _totalCompletions = 0;
+        _completionRate = 0.0;
+        _currentStreak = 0;
+        _longestStreak = 0;
+      });
+      return;
+    }
     
     // Reset data
-    _weeklyData = [];
-    _habitCounts = {};
-    _totalCompletions = 0;
-    
-    // Get today and dates for the last 7 days
-    final DateTime today = DateTime.now();
-    final List<DateTime> lastWeek = List.generate(7, (index) => 
-      today.subtract(Duration(days: index)));
-    
-    // Format dates
-    final List<String> formattedDates = lastWeek.map((date) => 
-      DateFormat('yyyy-MM-dd').format(date)).toList();
+    final Map<String, int> habitCounts = {};
+    int totalCompletions = 0;
     
     // Count completions by day and habit
     for (final habit in habits) {
       // Count by habit
       int habitCompletions = 0;
       
-      for (final day in formattedDates) {
+      for (final day in _formattedDates) {
         if (habit.completedDays.contains(day)) {
           habitCompletions++;
         }
       }
       
-      _habitCounts[habit.name] = habitCompletions;
-      _totalCompletions += habitCompletions;
+      habitCounts[habit.name] = habitCompletions;
+      totalCompletions += habitCompletions;
     }
     
     // Calculate completion rate
     final int totalPossible = habits.length * 7; // 7 days
-    _completionRate = totalPossible > 0 ? (_totalCompletions / totalPossible) * 100 : 0;
+    final double completionRate = totalPossible > 0 ? (totalCompletions / totalPossible) * 100 : 0;
     
     // Calculate weekly data for chart
+    final List<Map<String, dynamic>> weeklyData = [];
     for (int i = 0; i < 7; i++) {
-      final String day = DateFormat('E').format(lastWeek[i]); // Get day abbreviation
-      final String date = formattedDates[i];
+      final String day = DateFormat('E').format(_lastWeekDates[i]); // Get day abbreviation
+      final String date = _formattedDates[i];
       
       int completions = 0;
       for (final habit in habits) {
@@ -88,7 +103,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         }
       }
       
-      _weeklyData.add({
+      weeklyData.add({
         'day': day,
         'completions': completions,
         'total': habits.length,
@@ -96,33 +111,38 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     }
     
     // Calculate streaks
-    _calculateStreaks(habits);
+    final streaks = _calculateStreaks(habits);
     
-    setState(() {});
+    setState(() {
+      _weeklyData = weeklyData;
+      _habitCounts = habitCounts;
+      _totalCompletions = totalCompletions;
+      _completionRate = completionRate;
+      _currentStreak = streaks['current']!;
+      _longestStreak = streaks['longest']!;
+    });
   }
 
-  void _calculateStreaks(List<Habit> habits) {
-    if (habits.isEmpty) return;
+  Map<String, int> _calculateStreaks(List<Habit> habits) {
+    if (habits.isEmpty) return {'current': 0, 'longest': 0};
     
     final DateTime today = DateTime.now();
     int currentStreak = 0;
     int longestStreak = 0;
     int tempStreak = 0;
     
+    // Optimize: Pre-allocate set for faster lookups
+    final Set<String> completedDatesSet = {};
+    for (final habit in habits) {
+      completedDatesSet.addAll(habit.completedDays);
+    }
+    
     // Check for the last 100 days (arbitrary limit)
     for (int i = 0; i < 100; i++) {
       final DateTime checkDate = today.subtract(Duration(days: i));
       final String formattedDate = DateFormat('yyyy-MM-dd').format(checkDate);
       
-      bool anyCompleted = false;
-      for (final habit in habits) {
-        if (habit.completedDays.contains(formattedDate)) {
-          anyCompleted = true;
-          break;
-        }
-      }
-      
-      if (anyCompleted) {
+      if (completedDatesSet.contains(formattedDate)) {
         tempStreak++;
         
         // Current streak only counts consecutive days including today
@@ -143,9 +163,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       }
     }
     
-    // Update state
-    _currentStreak = currentStreak;
-    _longestStreak = longestStreak;
+    // Check if the last tempStreak is the longest
+    if (tempStreak > longestStreak) {
+      longestStreak = tempStreak;
+    }
+    
+    return {'current': currentStreak, 'longest': longestStreak};
   }
 
   @override
