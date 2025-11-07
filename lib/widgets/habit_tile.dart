@@ -22,9 +22,9 @@ class HabitTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if habit is completed today - use cached formatter
+    // Check if habit is completed today - use cached formatter and helper method
     final String today = _dateFormatter.format(DateTime.now());
-    final bool isCompleted = habit.completedDays.contains(today);
+    final bool isCompleted = habit.isCompletedOn(today);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),

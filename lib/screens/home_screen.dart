@@ -284,7 +284,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // Toggle habit completion for today - optimized to avoid redundant queries
   void _toggleHabitCompletion(Habit habit) async {
     final String today = _dateTimeToString(DateTime.now());
-    final bool isCompleted = habit.completedDays.contains(today);
+    final bool isCompleted = habit.isCompletedOn(today);
 
     if (isCompleted) {
       await _habitService.markHabitIncomplete(habit.userId, habit.id, today);

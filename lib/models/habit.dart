@@ -2,11 +2,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Habit {
-  String id;
-  String name;
-  String userId;
-  List<String> completedDays;
-  DateTime createdAt;
+  final String id;
+  final String name;
+  final String userId;
+  final List<String> completedDays;
+  final DateTime createdAt;
 
   Habit({
     required this.id,
@@ -38,4 +38,12 @@ class Habit {
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
+  
+  // Helper method to check if habit is completed on a specific date
+  bool isCompletedOn(String dateString) {
+    return completedDays.contains(dateString);
+  }
+  
+  // Helper method to get completion count
+  int get completionCount => completedDays.length;
 }
