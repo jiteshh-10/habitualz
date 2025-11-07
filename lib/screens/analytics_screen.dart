@@ -66,7 +66,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       });
       return;
     }
-    
     // Reset data
     final Map<String, int> habitCounts = {};
     int totalCompletions = 0;
@@ -118,24 +117,22 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       _habitCounts = habitCounts;
       _totalCompletions = totalCompletions;
       _completionRate = completionRate;
-      _currentStreak = streaks['current']!;
-      _longestStreak = streaks['longest']!;
+      _currentStreak = streaks.currentStreak;
+      _longestStreak = streaks.longestStreak;
     });
   }
 
-  Map<String, int> _calculateStreaks(List<Habit> habits) {
-    if (habits.isEmpty) return {'current': 0, 'longest': 0};
+  StreakResult _calculateStreaks(List<Habit> habits) {
+    if (habits.isEmpty) return const StreakResult(currentStreak: 0, longestStreak: 0);
     
     final DateTime today = DateTime.now();
     int currentStreak = 0;
     int longestStreak = 0;
     int tempStreak = 0;
     
-    // Optimize: Pre-allocate set for faster lookups
-    final Set<String> completedDatesSet = {};
-    for (final habit in habits) {
-      completedDatesSet.addAll(habit.completedDays);
-    }
+    // Optimize: Use functional approach for better performance
+    final Set<String> completedDatesSet = 
+        habits.expand((h) => h.completedDays).toSet();
     
     // Check for the last 100 days (arbitrary limit)
     for (int i = 0; i < 100; i++) {
@@ -168,7 +165,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       longestStreak = tempStreak;
     }
     
-    return {'current': currentStreak, 'longest': longestStreak};
+    return StreakResult(
+      currentStreak: currentStreak,
+      longestStreak: longestStreak,
+    );
   }
 
   @override

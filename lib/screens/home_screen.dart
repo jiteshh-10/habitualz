@@ -80,7 +80,11 @@ class _HomeScreenState extends State<HomeScreen> {
             heatMapData[dateOnly] = heatMapData[dateOnly]! + 1;
           }
         } catch (e) {
-          // Silently skip invalid dates
+          // Log error in debug mode only
+          assert(() {
+            print('Warning: Error parsing date in heatmap: $completedDay - $e');
+            return true;
+          }());
         }
       }
     }

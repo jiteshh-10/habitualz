@@ -123,8 +123,11 @@ class HabitService {
               heatMapData[dateOnly] = heatMapData[dateOnly]! + 1;
             }
           } catch (e) {
-            // Silently skip invalid dates
-            print('Warning: Invalid date format in completedDays: $dateString');
+            // Silently skip invalid dates but log in debug mode
+            assert(() {
+              print('Warning: Invalid date format in completedDays: $dateString');
+              return true;
+            }());
           }
         }
       }

@@ -5,6 +5,8 @@ class Habit {
   final String id;
   final String name;
   final String userId;
+  // Note: While this is a final field, the List itself is mutable.
+  // The list should not be modified directly; use Firestore operations instead.
   final List<String> completedDays;
   final DateTime createdAt;
 
@@ -15,7 +17,7 @@ class Habit {
     List<String>? completedDays,
     DateTime? createdAt,
   }) : 
-    completedDays = completedDays ?? [],
+    completedDays = completedDays ?? const [],
     createdAt = createdAt ?? DateTime.now();
 
   // Create a Habit from a Map (for Firestore)
@@ -46,4 +48,15 @@ class Habit {
   
   // Helper method to get completion count
   int get completionCount => completedDays.length;
+}
+
+// Data class for streak calculation results
+class StreakResult {
+  final int currentStreak;
+  final int longestStreak;
+  
+  const StreakResult({
+    required this.currentStreak,
+    required this.longestStreak,
+  });
 }
